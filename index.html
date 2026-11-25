@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TreeLab — BST Visualizer</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#69758a;--line:#e4e9f2;--accent:#6558f5;--accent2:#8b83ff;--good:#16a085;--bad:#e85d75;--node:#eeeaff;--nodeText:#4e43d8;--shadow:0 8px 28px #1b2a4510}
+[data-theme="dark"]{--bg:#111522;--panel:#191f30;--text:#eef1ff;--muted:#a0abc1;--line:#2c3449;--accent:#948bff;--accent2:#6e65e9;--good:#42d6b0;--bad:#ff8196;--node:#302d55;--nodeText:#e0dcff;--shadow:0 8px 28px #0003}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;transition:background .2s,color .2s}
+button,input,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);padding:9px 12px;transition:.18s}button:hover{border-color:var(--accent);transform:translateY(-1px)}button.primary{background:var(--accent);border-color:var(--accent);color:white;font-weight:700}button.soft{background:var(--node);color:var(--nodeText);border-color:transparent}button.danger{color:var(--bad)}button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+input{min-width:0;width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 11px;outline:none}input:focus{border-color:var(--accent)}label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:5px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px clamp(14px,3vw,38px);border-bottom:1px solid var(--line);background:var(--panel)}.brand{display:flex;align-items:center;gap:11px}.logo{display:grid;place-items:center;width:39px;height:39px;border-radius:12px;background:var(--accent);color:#fff;font-weight:900;font-size:19px}.brand h1{font-size:19px;line-height:1.1;margin:0;letter-spacing:-.5px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.top-actions{display:flex;gap:8px;align-items:center}
+.wrap{max-width:1450px;margin:auto;padding:24px clamp(12px,2.5vw,32px) 42px}.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}.eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;color:var(--accent)}h2{font-size:25px;letter-spacing:-.8px;margin:4px 0 5px}.sub{color:var(--muted);margin:0}.status{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:7px 11px;color:var(--muted);white-space:nowrap;font-size:12px}.dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.layout{display:grid;grid-template-columns:285px minmax(0,1fr);gap:18px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:15px 17px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.panel-head h3{font-size:14px;margin:0}.panel-body{padding:16px}.field{margin-bottom:13px}.field:last-child{margin-bottom:0}.input-row{display:flex;gap:7px}.input-row input{flex:1}.input-row button{white-space:nowrap}.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.section-label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;font-weight:800;color:var(--muted);margin:19px 0 9px}.section-label:first-child{margin-top:0}.divider{height:1px;background:var(--line);margin:16px 0}.small{font-size:12px;color:var(--muted)}.workspace{min-width:0;display:flex;flex-direction:column;gap:15px}.tree-panel{min-height:400px}.tree-toolbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.tree-toolbar button{padding:6px 9px;font-size:12px}.canvas{height:390px;position:relative;overflow:hidden;background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:20px 20px;touch-action:none}.canvas svg{width:100%;height:100%;display:block;user-select:none}.empty{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:var(--muted);pointer-events:none}.empty strong{font-size:15px;color:var(--text);margin-bottom:4px}.legend{display:flex;gap:15px;flex-wrap:wrap;padding:12px 17px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}.legend span{display:flex;align-items:center;gap:6px}.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--nodeText)}.legend .path{background:#f5a623}.legend .found{background:var(--good)}
+.node circle{fill:var(--node);stroke:var(--accent2);stroke-width:2;transition:fill .2s,stroke .2s}.node text{fill:var(--nodeText);font-size:13px;font-weight:800;text-anchor:middle;dominant-baseline:central;pointer-events:none}.node.current circle{fill:var(--accent);stroke:var(--accent);stroke-width:3}.node.current text{fill:white}.node.path circle{fill:#fff1d8;stroke:#eaa32b}.node.path text{fill:#80520a}.node.found circle{fill:var(--good);stroke:var(--good)}.node.found text{fill:#fff}.edge{stroke:var(--line);stroke-width:2;transition:stroke .2s}.edge.active{stroke:#eaa32b;stroke-width:3}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.metric{padding:13px 15px;background:var(--panel);border:1px solid var(--line);border-radius:13px}.metric .k{color:var(--muted);font-size:11px;font-weight:700}.metric .v{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:2px}.metric .hint{font-size:10px;color:var(--muted)}
+.operation{display:flex;gap:11px;align-items:flex-start;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:var(--panel)}.op-icon{width:31px;height:31px;flex-shrink:0;display:grid;place-items:center;border-radius:10px;background:var(--node);color:var(--nodeText);font-weight:900}.operation strong{display:block;font-size:12px;margin-bottom:2px}.operation p{margin:0;color:var(--muted);font-size:12px}.operation .message{color:var(--text)}
+.traversal-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.traversal-controls button{padding:7px 10px}.speed{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;margin-left:auto}.speed input{width:100px;padding:0;accent-color:var(--accent)}.sequence{display:flex;gap:6px;flex-wrap:wrap;min-height:32px;margin-top:12px}.token{display:grid;place-items:center;min-width:31px;height:31px;padding:0 8px;border-radius:9px;background:var(--bg);border:1px solid var(--line);font-weight:750;font-size:12px}.token.visited{background:var(--node);color:var(--nodeText);border-color:var(--accent2)}.token.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.tabs{display:flex;gap:5px;flex-wrap:wrap}.tabs button{font-size:11px;padding:6px 9px}.tabs button.active{background:var(--node);color:var(--nodeText);border-color:var(--accent2)}.code{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;max-height:300px;font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;color:var(--text)}.code .hl{display:block;background:#e8e5ff;color:#4238b8;margin:0 -12px;padding:0 12px}.properties{display:grid;grid-template-columns:1fr 1fr;gap:8px}.prop{padding:10px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}.prop b{display:block;font-size:11px}.prop span{font-size:12px;color:var(--muted)}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px}td code{color:var(--nodeText);font-weight:800}.pill{display:inline-block;background:var(--node);color:var(--nodeText);border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800}.content-section{margin-top:18px}.content-section .panel-body p{margin-top:0;color:var(--muted)}.example-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.example{border:1px solid var(--line);border-radius:11px;padding:12px}.example h4{margin:0 0 7px;font-size:12px}.mini-tree{font:12px/1.6 ui-monospace,monospace;color:var(--muted);white-space:pre}.quiz-row{display:flex;gap:8px;flex-wrap:wrap}.toast{position:fixed;bottom:18px;right:18px;background:var(--text);color:var(--panel);padding:11px 15px;border-radius:11px;box-shadow:var(--shadow);z-index:10;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:calc(100% - 36px)}.toast.show{opacity:1;transform:translateY(0)}footer{text-align:center;color:var(--muted);font-size:11px;padding:25px 0 0}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:0}.sidebar .panel-body{grid-column:span 2}.tree-panel{min-height:0}.canvas{height:350px}}
+@media(max-width:600px){.topbar{padding:13px}.brand h1{font-size:16px}.brand p{display:none}.top-actions button{font-size:11px;padding:8px}.wrap{padding:17px 10px 30px}.intro{align-items:flex-start;flex-direction:column}.intro h2{font-size:22px}.sidebar{display:block}.sidebar .panel-body{padding:13px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric .v{font-size:20px}.canvas{height:300px}.lower-grid{grid-template-columns:1fr}.speed{margin-left:0;width:100%;justify-content:flex-end}.tree-toolbar{gap:4px}.tree-toolbar button{padding:6px}.panel-head{padding:12px}.panel-body{padding:13px}.example-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo">T</div><div><h1>TreeLab</h1><p>Interactive data structure playground</p></div></div>
+  <div class="top-actions"><button id="themeBtn" title="Switch theme">☾ Dark mode</button><button id="resetBtn">↺ Reset</button></div>
+</header>
+<main class="wrap">
+  <section class="intro"><div><div class="eyebrow">Data structures · Learn by doing</div><h2>Binary Search Tree Visualizer</h2><p class="sub">Explore, operate, and understand trees one step at a time.</p></div><div class="status"><span class="dot"></span><span id="statusText">Ready to explore</span></div></section>
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <div class="panel-head"><h3>⌘ Operations</h3><span class="pill">BST</span></div>
+        <div class="panel-body">
+          <div class="section-label">Insert a value</div>
+          <div class="field"><div class="input-row"><input id="insertInput" type="number" placeholder="e.g. 45"><button class="primary" id="insertBtn">+ Insert</button></div></div>
+          <div class="section-label">Search / delete</div>
+          <div class="field"><input id="targetInput" type="number" placeholder="Enter a value"></div>
+          <div class="btn-grid"><button id="searchBtn">⌕ Search</button><button id="deleteBtn" class="danger">− Delete</button></div>
+          <div class="section-label">Custom tree</div>
+          <div class="field"><input id="customInput" placeholder="50, 30, 70, 20, 40"></div>
+          <div class="btn-grid"><button id="loadBtn">Load values</button><button id="randomBtn">⤨ Random tree</button></div>
+          <div class="divider"></div>
+          <div class="btn-grid"><button id="undoBtn">↶ Undo</button><button id="redoBtn">↷ Redo</button><button id="minBtn">↓ Minimum</button><button id="maxBtn">↑ Maximum</button><button id="predBtn">← Predecessor</button><button id="succBtn">Successor →</button></div>
+          <p class="small" style="margin:10px 0 0">For predecessor/successor, enter the target value first.</p>
+        </div>
+      </section>
+      <section class="panel" style="margin-top:15px">
+        <div class="panel-head"><h3>⚙ Tree controls</h3></div>
+        <div class="panel-body">
+          <div class="btn-grid"><button id="zoomIn">＋ Zoom in</button><button id="zoomOut">－ Zoom out</button><button id="fitBtn">Fit tree</button><button id="clearBtn" class="danger">Clear tree</button></div>
+          <div class="section-label">Quick examples</div>
+          <div class="btn-grid"><button id="balancedBtn">Balanced tree</button><button id="skewedBtn">Skewed tree</button></div>
+          <div class="section-label">Advanced</div>
+          <div class="btn-grid"><button id="avlBtn">AVL insert</button><button id="quizBtn">Start quiz</button></div>
+          <p class="small" id="advancedNote" style="margin-bottom:0">AVL insert uses rotations to keep the tree balanced.</p>
+        </div>
+      </section>
+    </aside>
+    <div class="workspace">
+      <section class="panel tree-panel">
+        <div class="panel-head"><h3>Tree canvas</h3><div class="tree-toolbar"><button id="fitBtn2">Fit</button><button id="zoomIn2">＋</button><button id="zoomOut2">−</button></div></div>
+        <div class="canvas" id="canvas"><svg id="treeSvg" role="img" aria-label="Interactive binary search tree"></svg><div class="empty" id="emptyState"><strong>Your tree starts here</strong><span>Insert a value or load an example tree.</span></div></div>
+        <div class="legend"><span><i></i> Normal node</span><span><i class="path"></i> Comparison path</span><span><i class="found"></i> Current / found node</span><span>↔ Drag to pan · Scroll to zoom</span></div>
+      </section>
+      <div class="metrics">
+        <div class="metric"><div class="k">TOTAL NODES</div><div class="v" id="sizeMetric">0</div><div class="hint">Unique values</div></div>
+        <div class="metric"><div class="k">TREE HEIGHT</div><div class="v" id="heightMetric">0</div><div class="hint">Edges on longest path</div></div>
+        <div class="metric"><div class="k">MINIMUM</div><div class="v" id="minMetric">—</div><div class="hint">Leftmost node</div></div>
+        <div class="metric"><div class="k">MAXIMUM</div><div class="v" id="maxMetric">—</div><div class="hint">Rightmost node</div></div>
+      </div>
+      <section class="operation"><div class="op-icon" id="opIcon">i</div><div><strong id="opTitle">Ready when you are</strong><p class="message" id="opMessage">Insert a value to create the root node, then keep building your tree.</p></div></section>
+      <section class="panel">
+        <div class="panel-head"><h3>⇢ Traversal explorer</h3><span class="pill" id="travCount">0 visited</span></div>
+        <div class="panel-body">
+          <div class="traversal-controls"><button class="soft travBtn" data-trav="inorder">Inorder</button><button class="travBtn" data-trav="preorder">Preorder</button><button class="travBtn" data-trav="postorder">Postorder</button><button class="travBtn" data-trav="levelorder">Level-order</button><button class="primary" id="playBtn">▶ Play</button><button id="pauseBtn">Ⅱ Pause</button><button id="stepBtn">Step →</button><button id="stopBtn">Stop</button><div class="speed"><span>Speed</span><input id="speedInput" type="range" min="1" max="10" value="5"><span id="speedLabel">5×</span></div></div>
+          <div class="sequence" id="sequence"><span class="small">Choose a traversal to see its visit order.</span></div>
+          <p class="small" id="traversalExplain" style="margin-bottom:0">Inorder visits left subtree, node, then right subtree — producing sorted values in a BST.</p>
+        </div>
+      </section>
+      <div class="lower-grid">
+        <section class="panel">
+          <div class="panel-head"><h3>Tree properties</h3><span class="pill" id="validPill">Valid BST</span></div>
+          <div class="panel-body"><div class="properties">
+            <div class="prop"><b>BST validation</b><span id="validText">Valid</span></div>
+            <div class="prop"><b>Balance</b><span id="balanceText">Empty tree</span></div>
+            <div class="prop"><b>Last operation</b><span id="lastOp">None</span></div>
+            <div class="prop"><b>Node count</b><span id="nodeCount">0</span></div>
+          </div><div class="divider"></div><p class="small" id="propertyNote">Every left descendant is smaller than its parent; every right descendant is larger.</p></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h3>⌘ Code companion</h3><div class="tabs" id="codeTabs"><button class="active" data-lang="pseudocode">Pseudo</button><button data-lang="cpp">C++</button><button data-lang="java">Java</button><button data-lang="python">Python</button></div></div>
+          <div class="panel-body"><div class="small" id="codeCaption">Insert · the highlighted logic follows the same comparison rule.</div><pre class="code" id="codeBlock"></pre></div>
+        </section>
+      </div>
+      <section class="panel content-section">
+        <div class="panel-head"><h3>Learn the fundamentals</h3><span class="pill">Quick reference</span></div>
+        <div class="panel-body">
+          <p>A <b>Binary Search Tree (BST)</b> is a binary tree where every value in the left subtree is smaller than its node, and every value in the right subtree is larger. This version stores unique values.</p>
+          <div class="table-wrap"><table><thead><tr><th>Operation</th><th>Average case</th><th>Worst case</th></tr></thead><tbody>
+            <tr><td>Search</td><td><code>O(log n)</code></td><td><code>O(n)</code></td></tr><tr><td>Insert</td><td><code>O(log n)</code></td><td><code>O(n)</code></td></tr><tr><td>Delete</td><td><code>O(log n)</code></td><td><code>O(n)</code></td></tr><tr><td>Min / max</td><td><code>O(log n)</code></td><td><code>O(n)</code></td></tr><tr><td>Traversal</td><td><code>O(n)</code></td><td><code>O(n)</code></td></tr></tbody></table></div>
+          <p style="margin:10px 0 0">Here, <b>n</b> is the number of nodes. Average-case lookup is logarithmic when the tree is reasonably balanced; inserting already sorted values into a plain BST can create a chain and make operations linear.</p>
+          <div class="divider"></div>
+          <div class="example-row"><div class="example"><h4>Balanced tree</h4><div class="mini-tree">       4
+     /   \\
+    2     6
+   / \\   / \\
+  1   3 5   7</div><p class="small" style="margin:5px 0 0">Height grows roughly with log₂(n).</p></div><div class="example"><h4>Right-skewed tree</h4><div class="mini-tree">1
+ \\
+  2
+   \\
+    3
+     \\
+      4</div><p class="small" style="margin:5px 0 0">Height can reach n − 1, so operations may be O(n).</p></div></div>
+        </div>
+      </section>
+      <footer>TreeLab · A hands-on playground for learning data structures</footer>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+let root=null, history=[], future=[], highlights=new Set(), current=null, found=null, activeEdges=new Set();
+let lastOperation='None', viewScale=1, viewX=0, viewY=0, traversal=[], traversalIndex=-1, traversalTimer=null, selectedTraversal='inorder', codeLang='pseudocode', toastTimer=null;
+let avlMode=false;
+class Node { constructor(value){this.value=value;this.left=null;this.right=null;this.height=1;} }
+const height=n=>n?1+Math.max(height(n.left),height(n.right)):0;
+const size=n=>n?1+size(n.left)+size(n.right):0;
+const minNode=n=>{if(!n)return null;while(n.left)n=n.left;return n;};
+const maxNode=n=>{if(!n)return null;while(n.right)n=n.right;return n;};
+const clone=n=>n?Object.assign(new Node(n.value),{left:clone(n.left),right:clone(n.right),height:n.height}):null;
+function save(){history.push(clone(root));if(history.length>60)history.shift();future=[];updateUndoRedo();}
+function updateUndoRedo(){$('undoBtn').disabled=!history.length;$('redoBtn').disabled=!future.length;}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2300);}
+function message(title,msg,icon='i'){ $('opTitle').textContent=title;$('opMessage').textContent=msg;$('opIcon').textContent=icon; }
+function setStatus(s){$('statusText').textContent=s;}
+function findPath(value){let n=root,path=[],edges=[],parent=null,side='';while(n){path.push(n.value);if(n.value===value)return {node:n,path,edges,parent,side};parent=n;if(value<n.value){edges.push(n.value+'-L');n=n.left;side='left';}else{edges.push(n.value+'-R');n=n.right;side='right';}}return {node:null,path,edges,parent,side};}
+function insert(value,quiet=false){if(!Number.isFinite(value)){toast('Enter a valid number.');return false;}const f=findPath(value);highlights=new Set(f.path);activeEdges=new Set(f.edges);current=null;found=null;if(f.node){message('Value already exists',`${value} is already in the tree. Duplicate values are ignored.`,'!');setStatus('Duplicate value');render();return false;}save();let n=root;if(!n)root=new Node(value);else{while(true){if(value<n.value){if(!n.left){n.left=new Node(value);break;}n=n.left;}else{if(!n.right){n.right=new Node(value);break;}n=n.right;}}}lastOperation='Insert '+value;highlights=new Set(f.path.concat(value));current=value;found=value;message('Inserted '+value, f.path.length?`${f.path.map((v,i)=>i===0?`Start at ${v}`:`compare at ${v}`).join(' → ')} → place ${value} as a ${value<f.parent.value?'left':'right'} child.`:`${value} becomes the root because the tree was empty.`,'+');setStatus('Insert complete');updateAll();if(!quiet)toast(`Inserted ${value}`);return true;}
+function deleteValue(value){if(!Number.isFinite(value)){toast('Enter a value to delete.');return;}const f=findPath(value);highlights=new Set(f.path);activeEdges=new Set(f.edges);if(!f.node){current=null;found=null;lastOperation='Delete (not found)';message('Value not found',`Searched ${f.path.join(' → ')||'an empty tree'}; ${value} is not in the tree.`,'!');setStatus('Not found');updateAll();return;}save();const target=f.node;let caseText='';if(!target.left&&!target.right)caseText='Leaf case: remove the node; its parent link becomes empty.';else if(!target.left||!target.right)caseText='One-child case: connect the parent directly to the only child.';else caseText='Two-child case: replace with the inorder successor (minimum of right subtree), then remove that successor.';root=removeNode(root,value);lastOperation='Delete '+value;current=null;found=null;message('Deleted '+value,caseText,'−');setStatus('Delete complete');updateAll();toast(`Deleted ${value}`);}
+function removeNode(n,v){if(!n)return null;if(v<n.value)n.left=removeNode(n.left,v);else if(v>n.value)n.right=removeNode(n.right,v);else{if(!n.left)return n.right;if(!n.right)return n.left;let s=minNode(n.right);n.value=s.value;n.right=removeNode(n.right,s.value);}return n;}
+function searchValue(value){if(!Number.isFinite(value)){toast('Enter a value to search.');return;}const f=findPath(value);highlights=new Set(f.path);activeEdges=new Set(f.edges);current=f.node?value:null;found=f.node?value:null;lastOperation='Search '+value;if(f.node){message('Found '+value,`${f.path.map((v,i)=>i===0?`Start at ${v}`:`${value<f.path[i-1]?'go left':'go right'} to ${v}`).join(' · ')}. Target located in ${f.path.length} comparison${f.path.length===1?'':'s'}.`,'✓');setStatus('Value found');}else{message('Value not found',`${f.path.map((v,i)=>i===0?`Start at ${v}`:`${value<f.path[i-1]?'go left':'go right'} to ${v}`).join(' · ')||'The tree is empty'}. Reached an empty link; ${value} is not present.`,'×');setStatus('Not found');}updateAll();}
+function walk(n,type,out=[]){if(!n)return out;if(type==='preorder')out.push(n.value);walk(n.left,type,out);if(type==='inorder')out.push(n.value);walk(n.right,type,out);if(type==='postorder')out.push(n.value);return out;}
+function levelOrder(){const out=[],q=[];if(root)q.push(root);while(q.length){const n=q.shift();out.push(n.value);if(n.left)q.push(n.left);if(n.right)q.push(n.right);}return out;}
+const travNames={inorder:'Inorder',preorder:'Preorder',postorder:'Postorder',levelorder:'Level-order (BFS)'};
+const travExplains={inorder:'Left subtree → node → right subtree. In a BST, inorder produces values in ascending order.',preorder:'Node → left subtree → right subtree. Useful for copying or serializing a tree structure.',postorder:'Left subtree → right subtree → node. Useful when children must be processed before a parent.',levelorder:'Visit nodes level by level using a queue (breadth-first search).'};
+function startTraversal(type){stopTraversal(false);selectedTraversal=type;traversal=type==='levelorder'?levelOrder():walk(root,type,[]);traversalIndex=-1;highlights=new Set();current=null;found=null;$('traversalExplain').textContent=travExplains[type];document.querySelectorAll('.travBtn').forEach(b=>b.classList.toggle('soft',b.dataset.trav===type));renderSequence();message(travNames[type],traversal.length?`Traversal ready: ${traversal.length} node${traversal.length===1?'':'s'} to visit. Press Play or Step.`:'The tree is empty; insert some values first.','↝');setStatus('Traversal ready');}
+function renderSequence(){$('sequence').innerHTML='';if(!traversal.length){$('sequence').innerHTML='<span class="small">No nodes to visit. Insert values first.</span>';$('travCount').textContent='0 visited';return;}traversal.forEach((v,i)=>{const s=document.createElement('span');s.className='token'+(i<=traversalIndex?' visited':'')+(i===traversalIndex?' active':'');s.textContent=v;s.title=`Visit ${v}`;$('sequence').appendChild(s);});$('travCount').textContent=`${Math.max(0,traversalIndex+1)} / ${traversal.length} visited`;}
+function stepTraversal(){if(!traversal.length){startTraversal(selectedTraversal);if(!traversal.length)return;}if(traversalIndex>=traversal.length-1){stopTraversal(false);setStatus('Traversal complete');message('Traversal complete',`${travNames[selectedTraversal]} order: ${traversal.join(' → ')}.`,'✓');return;}traversalIndex++;current=traversal[traversalIndex];found=current;highlights=new Set(traversal.slice(0,traversalIndex+1));render();renderSequence();message(`Visit ${current}`,`${traversalIndex+1} of ${traversal.length} · ${travNames[selectedTraversal]} traversal.`,'→');setStatus('Visiting nodes');if(traversalIndex===traversal.length-1)setTimeout(()=>{if(traversalIndex===traversal.length-1&&!traversalTimer){setStatus('Traversal complete');message('Traversal complete',`Finished ${travNames[selectedTraversal]}: ${traversal.join(' → ')}.`,'✓');}},0);}
+function playTraversal(){if(!traversal.length||traversalIndex>=traversal.length-1)startTraversal(selectedTraversal);if(!traversal.length)return;clearInterval(traversalTimer);const delay=Math.max(150,1150-Number($('speedInput').value)*100);traversalTimer=setInterval(()=>{if(traversalIndex>=traversal.length-1){stopTraversal(false);setStatus('Traversal complete');message('Traversal complete',`${travNames[selectedTraversal]}: ${traversal.join(' → ')}.`,'✓');return;}stepTraversal();},delay);setStatus('Playing traversal');}
+function stopTraversal(clear=true){clearInterval(traversalTimer);traversalTimer=null;if(clear){traversalIndex=-1;current=null;found=null;highlights=new Set();render();renderSequence();} }
+function updateAll(){render();updateMetrics();updateProperties();updateUndoRedo();renderSequence();updateCode();}
+function updateMetrics(){$('sizeMetric').textContent=size(root);$('heightMetric').textContent=root?height(root)-1:0;$('minMetric').textContent=minNode(root)?.value??'—';$('maxMetric').textContent=maxNode(root)?.value??'—';}
+function balanced(n){if(!n)return true;return Math.abs(height(n.left)-height(n.right))<=1&&balanced(n.left)&&balanced(n.right);}
+function validBST(n,min=-Infinity,max=Infinity){return !n||(n.value>min&&n.value<max&&validBST(n.left,min,n.value)&&validBST(n.right,n.value,max));}
+function updateProperties(){const valid=validBST(root);$('validText').textContent=valid?'Valid':'Invalid';$('validPill').textContent=valid?'Valid BST':'Invalid BST';$('validPill').style.color=valid?'var(--good)':'var(--bad)';$('balanceText').textContent=!root?'Empty tree':balanced(root)?'Balanced':'Unbalanced';$('lastOp').textContent=lastOperation;$('nodeCount').textContent=size(root);$('propertyNote').textContent=balanced(root)?'The current tree is height-balanced at every node (AVL-style balance condition).':'Some node has left/right subtree heights differing by more than one. A plain BST does not automatically rebalance.';}
+function render(){const svg=$('treeSvg'),canvas=$('canvas');svg.innerHTML='';$('emptyState').style.display=root?'none':'grid';if(!root)return;const nodes=[],edges=[];function layout(n,depth=0){if(!n)return;layout(n.left,depth+1);n._x=nodes.length; n._y=depth;nodes.push(n);layout(n.right,depth+1);}layout(root);const maxDepth=Math.max(...nodes.map(n=>n._y)),width=Math.max(canvas.clientWidth,500),heightPx=Math.max(canvas.clientHeight,300);const spacing=Math.min(85,(width-70)/Math.max(1,nodes.length));const left=35,top=38,dy=Math.min(72,(heightPx-65)/Math.max(1,maxDepth+1));nodes.forEach(n=>{n._px=left+ n._x*spacing;n._py=top+n._y*dy;}); // re-space by depth for a readable tree
+const xPositions=new Map();function assign(n,l,r,d){if(!n)return;const x=(l+r)/2;n._px=x;n._py=top+d*dy;assign(n.left,l,x,d+1);assign(n.right,x,r,d+1);}assign(root,20,width-20,0);
+const NS='http://www.w3.org/2000/svg';function el(tag,attrs){const e=document.createElementNS(NS,tag);Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));return e;}const g=el('g',{transform:`translate(${viewX} ${viewY}) scale(${viewScale})`});svg.appendChild(g);
+function drawEdges(n){if(!n)return;for(const [child,side] of [[n.left,'L'],[n.right,'R']])if(child){const active=activeEdges.has(n.value+'-'+side);g.appendChild(el('line',{x1:n._px,y1:n._py,x2:child._px,y2:child._py,class:'edge'+(active?' active':'')}));drawEdges(child);}}drawEdges(root);
+function drawNodes(n){if(!n)return;const c=el('g',{class:'node'+(current===n.value?' current':'')+(highlights.has(n.value)?' path':'')+(found===n.value?' found':'')});c.appendChild(el('circle',{cx:n._px,cy:n._py,r:19}));const t=el('text',{x:n._px,y:n._py+1});t.textContent=n.value;c.appendChild(t);g.appendChild(c);drawNodes(n.left);drawNodes(n.right);}drawNodes(root);}
+function resetView(){viewScale=1;viewX=0;viewY=0;render();}
+function loadValues(vals){stopTraversal();save();root=null;const unique=[];vals.forEach(v=>{if(Number.isFinite(v)&&!unique.includes(v))unique.push(v);});unique.forEach(v=>{if(!root)root=new Node(v);else{let n=root;while(true){if(v<n.value){if(!n.left){n.left=new Node(v);break;}n=n.left;}else{if(!n.right){n.right=new Node(v);break;}n=n.right;}}}});highlights=new Set();current=found=null;lastOperation='Load values';message('Tree loaded',`Loaded ${size(root)} unique value${size(root)===1?'':'s'}: ${unique.join(', ')||'none'}.`,'✓');setStatus('Tree loaded');resetView();updateAll();}
+function randomTree(){const count=7+Math.floor(Math.random()*5),arr=[];while(arr.length<count){const v=Math.floor(Math.random()*90)+10;if(!arr.includes(v))arr.push(v);}loadValues(arr);$('customInput').value=arr.join(', ');toast('Random tree generated');}
+function getTarget(){const v=Number($('targetInput').value);return $('targetInput').value.trim()===''?NaN:v;}
+function predecessor(v){const f=findPath(v);if(!f.node){searchValue(v);return;}let p=null;if(f.node.left)p=maxNode(f.node.left);else{let n=root;while(n&&n.value!==v){if(v>n.value){p=n;n=n.right;}else n=n.left;}}current=p?.value??null;found=current;highlights=new Set(f.path);message('Predecessor of '+v,p?`The greatest value smaller than ${v} is ${p.value}.`:`${v} has no predecessor in this tree.`,'←');lastOperation='Predecessor '+v;updateAll();}
+function successor(v){const f=findPath(v);if(!f.node){searchValue(v);return;}let s=null;if(f.node.right)s=minNode(f.node.right);else{let n=root;while(n&&n.value!==v){if(v<n.value){s=n;n=n.left;}else n=n.right;}}current=s?.value??null;found=current;highlights=new Set(f.path);message('Successor of '+v,s?`The smallest value greater than ${v} is ${s.value}.`:`${v} has no successor in this tree.`,'→');lastOperation='Successor '+v;updateAll();}
+function rotateRight(y){const x=y.left,T2=x.right;x.right=y;y.left=T2;return x;}function rotateLeft(x){const y=x.right,T2=y.left;y.left=x;x.right=T2;return y;}
+function h(n){return n?1+Math.max(h(n.left),h(n.right)):0;}function avlInsert(n,v){if(!n)return new Node(v);if(v<n.value)n.left=avlInsert(n.left,v);else if(v>n.value)n.right=avlInsert(n.right,v);else return n;const balance=h(n.left)-h(n.right);if(balance>1&&v<n.left.value)return rotateRight(n);if(balance<-1&&v>n.right.value)return rotateLeft(n);if(balance>1&&v>n.left.value){n.left=rotateLeft(n.left);return rotateRight(n);}if(balance<-1&&v<n.right.value){n.right=rotateRight(n.right);return rotateLeft(n);}return n;}
+function avlInsertMode(v){if(!Number.isFinite(v)){toast('Enter a value to insert into AVL tree.');return;}const before=size(root);if(findPath(v).node){toast('That value already exists.');return;}save();root=avlInsert(root,v);avlMode=true;current=found=v;highlights=new Set([v]);lastOperation='AVL insert '+v;message('AVL inserted '+v,'Inserted '+v+' and applied AVL single/double rotations if needed to maintain a height-balanced tree.','↻');setStatus('AVL insert complete');updateAll();toast(`AVL inserted ${v}`);}
+const codeSamples={
+pseudocode:`INSERT(ROOT, VALUE)
+1. If ROOT is NULL:
+      create node VALUE; return it
+2. If VALUE < ROOT.VALUE:
+      ROOT.LEFT = INSERT(ROOT.LEFT, VALUE)
+3. Else if VALUE > ROOT.VALUE:
+      ROOT.RIGHT = INSERT(ROOT.RIGHT, VALUE)
+4. Return ROOT
+
+SEARCH(ROOT, VALUE)
+1. If ROOT is NULL or ROOT.VALUE = VALUE:
+      return ROOT
+2. If VALUE < ROOT.VALUE:
+      search ROOT.LEFT
+3. Otherwise search ROOT.RIGHT`,
+cpp:`struct Node {
+    int value;
+    Node *left, *right;
+    Node(int v) : value(v), left(nullptr), right(nullptr) {}
+};
+
+Node* insert(Node* root, int value) {
+    if (root == nullptr) return new Node(value);
+    if (value < root->value)
+        root->left = insert(root->left, value);
+    else if (value > root->value)
+        root->right = insert(root->right, value);
+    return root;
+}`,
+java:`class Node {
+    int value;
+    Node left, right;
+    Node(int value) { this.value = value; }
+}
+
+Node insert(Node root, int value) {
+    if (root == null) return new Node(value);
+    if (value < root.value)
+        root.left = insert(root.left, value);
+    else if (value > root.value)
+        root.right = insert(root.right, value);
+    return root;
+}`,
+python:`class Node:
+    def __init__(self, value):
+        self.value = value
+        self.left = self.right = None
+
+def insert(root, value):
+    if root is None:
+        return Node(value)
+    if value < root.value:
+        root.left = insert(root.left, value)
+    elif value > root.value:
+        root.right = insert(root.right, value)
+    return root`
+};
+function updateCode(){$('codeBlock').textContent=codeSamples[codeLang];$('codeCaption').textContent=`${codeLang==='pseudocode'?'Pseudocode':codeLang.toUpperCase()} · Insert/search follow the same less-than / greater-than rule.`;}
+function quiz(){if(!root){toast('Create a tree before starting the quiz.');return;}const ans=walk(root,'inorder').join(', ');const guess=prompt('Quiz: What is the INORDER traversal of this tree? Enter values separated by commas.');if(guess===null)return;const norm=s=>s.split(',').map(x=>x.trim()).filter(Boolean).join(',');if(norm(guess)===ans){message('Correct answer!','Inorder visits left, node, right; for a BST, this gives sorted values.','✓');toast('Correct! Great work.');}else{message('Try again',`The inorder sequence is ${ans}. Remember: left → node → right.`,'?');toast('Not quite — check the sequence shown in the message.');}}
+$('insertBtn').onclick=()=>{const raw=$('insertInput').value;if(raw.trim()===''){toast('Enter a number to insert.');return;}stopTraversal(false);if(insert(Number(raw))){$('insertInput').value='';}};$('insertInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('insertBtn').click();});
+$('searchBtn').onclick=()=>searchValue(getTarget());$('deleteBtn').onclick=()=>deleteValue(getTarget());$('targetInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchValue(getTarget());});
+$('loadBtn').onclick=()=>{const raw=$('customInput').value.trim();if(!raw){toast('Enter comma-separated numbers first.');return;}const parts=raw.split(',').map(x=>x.trim());if(parts.some(x=>x===''||!Number.isFinite(Number(x)))){toast('Use numbers separated by commas, e.g. 50, 30, 70.');return;}loadValues(parts.map(Number));};
+$('randomBtn').onclick=randomTree;$('clearBtn').onclick=()=>{stopTraversal();save();root=null;highlights=new Set();current=found=null;activeEdges=new Set();lastOperation='Clear tree';message('Tree cleared','The canvas is empty. Insert a value to start a new tree.','↺');setStatus('Empty tree');resetView();updateAll();};
+$('resetBtn').onclick=()=>{stopTraversal();save();root=null;highlights=new Set();current=found=null;activeEdges=new Set();lastOperation='Reset';$('insertInput').value='';$('targetInput').value='';$('customInput').value='';message('Workspace reset','Everything is cleared. Start with any value.','↺');setStatus('Ready to explore');resetView();updateAll();};
+$('undoBtn').onclick=()=>{if(!history.length)return;future.push(clone(root));root=history.pop();stopTraversal();lastOperation='Undo';message('Undo complete','Restored the previous tree state.','↶');updateAll();};$('redoBtn').onclick=()=>{if(!future.length)return;history.push(clone(root));root=future.pop();stopTraversal();lastOperation='Redo';message('Redo complete','Restored the next tree state.','↷');updateAll();};
+$('minBtn').onclick=()=>{const n=minNode(root);if(!n){toast('Tree is empty.');return;}current=found=n.value;highlights=new Set([n.value]);message('Minimum value',`Follow left links to the leftmost node: ${n.value}.`,'↓');lastOperation='Minimum';updateAll();};
+$('maxBtn').onclick=()=>{const n=maxNode(root);if(!n){toast('Tree is empty.');return;}current=found=n.value;highlights=new Set([n.value]);message('Maximum value',`Follow right links to the rightmost node: ${n.value}.`,'↑');lastOperation='Maximum';updateAll();};
+$('predBtn').onclick=()=>predecessor(getTarget());$('succBtn').onclick=()=>successor(getTarget());
+function zoom(f){viewScale=Math.max(.45,Math.min(2.5,viewScale*f));render();}$('zoomIn').onclick=$('zoomIn2').onclick=()=>zoom(1.15);$('zoomOut').onclick=$('zoomOut2').onclick=()=>zoom(.87);$('fitBtn').onclick=$('fitBtn2').onclick=resetView;
+$('balancedBtn').onclick=()=>{avlMode=false;$('customInput').value='40, 20, 60, 10, 30, 50, 70';loadValues([40,20,60,10,30,50,70]);};$('skewedBtn').onclick=()=>{avlMode=false;$('customInput').value='10, 20, 30, 40, 50, 60';loadValues([10,20,30,40,50,60]);};
+$('avlBtn').onclick=()=>{const raw=$('insertInput').value;if(raw.trim()===''){toast('Enter a value in the Insert field, then click AVL insert.');$('insertInput').focus();return;}avlInsertMode(Number(raw));$('insertInput').value='';};
+$('quizBtn').onclick=quiz;
+document.querySelectorAll('.travBtn').forEach(b=>b.onclick=()=>startTraversal(b.dataset.trav));$('playBtn').onclick=playTraversal;$('pauseBtn').onclick=()=>{stopTraversal(false);setStatus('Traversal paused');};$('stepBtn').onclick=()=>{stopTraversal(false);stepTraversal();};$('stopBtn').onclick=()=>{stopTraversal();setStatus('Traversal stopped');};$('speedInput').oninput=()=>{$('speedLabel').textContent=$('speedInput').value+'×';if(traversalTimer)playTraversal();};
+document.querySelectorAll('#codeTabs button').forEach(b=>b.onclick=()=>{codeLang=b.dataset.lang;document.querySelectorAll('#codeTabs button').forEach(x=>x.classList.toggle('active',x===b));updateCode();});
+$('themeBtn').onclick=()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'light';$('themeBtn').textContent=dark?'☀ Light mode':'☾ Dark mode';};
+const canvas=$('canvas');let drag=null;canvas.addEventListener('pointerdown',e=>{if(e.target.closest('.node'))return;drag={x:e.clientX,y:e.clientY,ox:viewX,oy:viewY};canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(!drag)return;viewX=drag.ox+(e.clientX-drag.x);viewY=drag.oy+(e.clientY-drag.y);render();});canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.08:.92);},{passive:false});
+window.addEventListener('resize',render);
+updateAll();updateUndoRedo();
+})();
+</script>
+</body>
+</html>
